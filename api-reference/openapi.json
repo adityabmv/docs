@@ -1,217 +1,475 @@
 {
-  "openapi": "3.1.0",
-  "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
-    "version": "1.0.0"
-  },
-  "servers": [
-    {
-      "url": "http://sandbox.mintlify.com"
-    }
-  ],
-  "security": [
-    {
-      "bearerAuth": []
-    }
-  ],
-  "paths": {
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
-                }
+      "components": {
+        "schemas": {
+          "CreateCourseBody": {
+            "properties": {
+              "name": {
+                "minLength": 1,
+                "type": "string",
+                "maxLength": 255,
+                "title": "Course Name",
+                "description": "Name of the course",
+                "example": "Introduction to Programming"
+              },
+              "description": {
+                "maxLength": 1000,
+                "type": "string",
+                "minLength": 1,
+                "title": "Course Description",
+                "description": "Description of the course",
+                "example": "This course covers the basics of programming."
               }
-            }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
-      "post": {
-        "description": "Information about a new plant added to the store",
-        "requestBody": {
-          "description": "Plant added to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
-        }
-      },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
+            },
             "type": "object",
+            "required": [
+              "name",
+              "description"
+            ]
+          },
+          "UpdateCourseBody": {
+            "properties": {
+              "name": {
+                "minLength": 3,
+                "type": "string",
+                "maxLength": 255,
+                "description": "Name of the course",
+                "example": "Introduction to Programming"
+              },
+              "description": {
+                "minLength": 3,
+                "type": "string",
+                "maxLength": 1000,
+                "description": "Description of the course",
+                "example": "This course covers the basics of programming."
+              },
+              "nameOrDescription": {
+                "minLength": 1,
+                "type": "string",
+                "deprecated": true,
+                "description": "[READONLY] This is a virtual field used only for validation. Do not include this field in requests.\nEither \"name\" or \"description\" must be provided.",
+                "readOnly": true,
+                "writeOnly": false
+              }
+            },
+            "type": "object"
+          },
+          "ReadCourseParams": {
             "properties": {
               "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
+                "type": "string",
+                "pattern": "^[0-9a-fA-F]{24}$",
+                "description": "Object ID of the course to read",
+                "example": "60d5ec49b3f1c8e4a8f8b8c1",
+                "format": "Mongo Object ID"
               }
-            }
-          }
-        ]
-      },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
+            },
+            "type": "object",
+            "required": [
+              "id"
+            ]
           },
-          "message": {
-            "type": "string"
+          "UpdateCourseParams": {
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[0-9a-fA-F]{24}$",
+                "description": "Object ID of the course to update",
+                "example": "60d5ec49b3f1c8e4a8f8b8c1",
+                "format": "Mongo Object ID"
+              }
+            },
+            "type": "object",
+            "required": [
+              "id"
+            ]
+          },
+          "CourseDataResponse": {
+            "properties": {
+              "_id": {
+                "minLength": 1,
+                "type": "string",
+                "description": "Unique identifier for the course",
+                "example": "60d5ec49b3f1c8e4a8f8b8c1",
+                "format": "Mongo Object ID",
+                "readOnly": true
+              },
+              "name": {
+                "minLength": 1,
+                "type": "string",
+                "description": "Name of the course",
+                "example": "Introduction to Programming"
+              },
+              "description": {
+                "minLength": 1,
+                "type": "string",
+                "description": "Description of the course",
+                "example": "This course covers the basics of programming."
+              },
+              "versions": {
+                "minLength": 1,
+                "type": "array",
+                "description": "List of course version IDs",
+                "example": [
+                  "60d5ec49b3f1c8e4a8f8b8c2",
+                  "60d5ec49b3f1c8e4a8f8b8c3"
+                ],
+                "readOnly": true,
+                "items": {
+                  "type": "string",
+                  "format": "Mongo Object ID"
+                }
+              },
+              "instructors": {
+                "minLength": 1,
+                "type": "array",
+                "description": "List of instructor IDs associated with the course",
+                "example": [
+                  "60d5ec49b3f1c8e4a8f8b8c4",
+                  "60d5ec49b3f1c8e4a8f8b8c5"
+                ],
+                "readOnly": true,
+                "items": {
+                  "type": "string",
+                  "format": "Mongo Object ID"
+                }
+              },
+              "createdAt": {
+                "minLength": 1,
+                "type": "string",
+                "title": "Course Created At",
+                "description": "Timestamp when the course was created",
+                "example": "2023-10-01T12:00:00Z",
+                "format": "date-time",
+                "readOnly": true
+              },
+              "updatedAt": {
+                "minLength": 1,
+                "type": "string",
+                "title": "Course Updated At",
+                "description": "Timestamp when the course was last updated",
+                "example": "2023-10-01T12:00:00Z",
+                "format": "date-time",
+                "readOnly": true
+              }
+            },
+            "type": "object",
+            "required": [
+              "_id",
+              "name",
+              "description",
+              "versions",
+              "instructors",
+              "createdAt",
+              "updatedAt"
+            ]
+          },
+          "CourseNotFoundErrorResponse": {
+            "properties": {
+              "message": {
+                "minLength": 1,
+                "type": "string",
+                "description": "The error message.",
+                "example": "No course found with the specified ID. Please verify the ID and try again.",
+                "readOnly": true
+              }
+            },
+            "type": "object",
+            "required": [
+              "message"
+            ]
+          },
+          "ValidationErrorResponse": {
+            "properties": {
+              "target": {
+                "type": "object",
+                "description": "The object that was validated.",
+                "readOnly": true
+              },
+              "property": {
+                "not": {
+                  "type": "null"
+                },
+                "type": "string",
+                "description": "The property that failed validation.",
+                "readOnly": true
+              },
+              "constraints": {
+                "type": "object",
+                "description": "Constraints that failed validation with error messages.",
+                "readOnly": true
+              },
+              "children": {
+                "items": {
+                  "$ref": "#/components/schemas/Array"
+                },
+                "type": "array",
+                "format": "ValidationErrorResponse",
+                "description": "Contains all nested validation errors of the property.",
+                "readOnly": true
+              },
+              "contexts": {
+                "type": "object",
+                "description": "Contains all nested validation errors of the property.",
+                "readOnly": true
+              }
+            },
+            "type": "object",
+            "required": [
+              "target",
+              "property",
+              "constraints",
+              "children"
+            ]
+          },
+          "DefaultErrorResponse": {
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "The error message.",
+                "readOnly": true
+              }
+            },
+            "type": "object",
+            "required": [
+              "message"
+            ]
+          },
+          "BadRequestErrorResponse": {
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "The error message.",
+                "readOnly": true
+              },
+              "errors": {
+                "$ref": "#/components/schemas/ValidationErrorResponse",
+                "type": "object",
+                "description": "The error details.",
+                "readOnly": true
+              }
+            },
+            "type": "object",
+            "required": [
+              "message",
+              "errors"
+            ]
           }
         }
-      }
-    },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
-      }
+      },
+      "info": {
+        "title": "ViBe Course API",
+        "version": "1.0.0",
+        "description": "API for managing courses"
+      },
+      "openapi": "3.0.0",
+      "paths": {
+        "/courses/": {
+          "post": {
+            "operationId": "CourseController.create",
+            "requestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CreateCourseBody"
+                  }
+                }
+              },
+              "description": "CreateCourseBody",
+              "required": false
+            },
+            "responses": {
+              "201": {
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/CourseDataResponse"
+                    }
+                  }
+                },
+                "description": "Course created successfully"
+              },
+              "400": {
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/BadRequestErrorResponse"
+                    }
+                  }
+                },
+                "description": "Bad Request Error"
+              }
+            },
+            "summary": "Create Course",
+            "tags": [
+              "Courses"
+            ],
+            "description": "Creates a new course with the provided details."
+          }
+        },
+        "/courses/{id}": {
+          "get": {
+            "operationId": "CourseController.read",
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "pattern": "^[0-9a-fA-F]{24}$",
+                  "description": "Object ID of the course to read",
+                  "example": "60d5ec49b3f1c8e4a8f8b8c1",
+                  "format": "Mongo Object ID"
+                }
+              }
+            ],
+            "responses": {
+              "200": {
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/CourseDataResponse"
+                    }
+                  }
+                },
+                "description": "Course retrieved successfully"
+              },
+              "400": {
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/BadRequestErrorResponse"
+                    }
+                  }
+                },
+                "description": "Bad Request Error"
+              },
+              "404": {
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/CourseNotFoundErrorResponse"
+                    }
+                  }
+                },
+                "description": "Course not found"
+              }
+            },
+            "summary": "Get Course",
+            "tags": [
+              "Courses"
+            ],
+            "description": "Retrieves the course details for the specified course ID."
+          },
+          "put": {
+            "operationId": "CourseController.update",
+            "parameters": [
+              {
+                "in": "path",
+                "name": "id",
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "pattern": "^[0-9a-fA-F]{24}$",
+                  "description": "Object ID of the course to update",
+                  "example": "60d5ec49b3f1c8e4a8f8b8c1",
+                  "format": "Mongo Object ID"
+                }
+              }
+            ],
+            "requestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/UpdateCourseBody"
+                  }
+                }
+              },
+              "description": "UpdateCourseBody",
+              "required": false
+            },
+            "responses": {
+              "200": {
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/CourseDataResponse"
+                    }
+                  }
+                },
+                "description": "Course updated successfully"
+              },
+              "400": {
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/BadRequestErrorResponse"
+                    }
+                  }
+                },
+                "description": "Bad Request Error"
+              },
+              "404": {
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/CourseNotFoundErrorResponse"
+                    }
+                  }
+                },
+                "description": "Course not found"
+              }
+            },
+            "summary": "Update Course",
+            "tags": [
+              "Courses"
+            ],
+            "description": "Updates the course details for the specified course ID."
+          }
+        }
+      },
+      "tags": [
+        {
+          "name": "Courses",
+          "description": "Operations related to courses, which include creating, reading, and updating course information."
+        }
+      ],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "servers": [
+        {
+          "url": "http://{host}:{port}{basePath}",
+          "description": "Local server",
+          "variables": {
+            "host": {
+              "default": "localhost",
+              "description": "Host name for the server"
+            },
+            "port": {
+              "default": "3000",
+              "description": "Port number for the server"
+            },
+            "basePath": {
+              "default": "api"
+            }
+          }
+        },
+        {
+          "url": "https://{url}/{basePath}",
+          "description": "Production server",
+          "variables": {
+            "host": {
+              "default": "api.example.com",
+              "description": "Host name for the production server"
+            },
+            "basePath": {
+              "default": "",
+              "description": "Base path for the production API"
+            }
+          }
+        }
+      ]
     }
-  }
-}
